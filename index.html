@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Edad</title>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --danger-color: #ef4444;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
+        header { background-color: var(--card-bg); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { margin: 0; font-size: 1.25rem; color: var(--primary-color); }
+        nav { display: flex; gap: 0.75rem; }
+        .nav-btn { text-decoration: none; padding: 0.5rem 1rem; font-size: 0.95rem; font-weight: 600; color: #6b7280; border-radius: 0.5rem; transition: all 0.2s; }
+        .nav-btn:hover { color: var(--primary-color); background-color: #f3f4f6; }
+        .nav-btn.active { color: white; background-color: var(--primary-color); }
+        main { flex: 1; display: flex; justify-content: center; align-items: center; padding: 2rem; }
+        .card { background-color: var(--card-bg); padding: 2rem; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); width: 100%; max-width: 480px; box-sizing: border-box; }
+        h2 { margin-top: 0; margin-bottom: 1.5rem; font-size: 1.5rem; text-align: center; color: var(--primary-color); }
+        .form-group { margin-bottom: 1.25rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem; }
+        select { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem; background-color: #fff; font-size: 0.95rem; outline: none; }
+        .date-selectors { display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 0.5rem; }
+        button.btn-action { width: 100%; padding: 0.75rem; background-color: var(--primary-color); color: white; border: none; border-radius: 0.5rem; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s; }
+        button.btn-action:hover { background-color: var(--primary-hover); }
+        .message, .result-box { margin-top: 1.5rem; padding: 1rem; border-radius: 0.5rem; text-align: center; display: none; }
+        .message.error { background-color: #fee2e2; color: var(--danger-color); display: block; }
+        .result-box { background-color: #e0e7ff; display: block; }
+        .result-box h3 { margin: 0 0 0.25rem 0; color: var(--primary-color); font-size: 0.95rem; }
+        .result-box p { margin: 0; font-size: 1.25rem; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Panel Interactivo</h1>
+        <nav>
+            <a href="index.html" class="nav-btn active">Edad</a>
+            <a href="temperatura.html" class="nav-btn">Temperatura</a>
+            <a href="tareas.html" class="nav-btn">Tareas</a>
+        </nav>
+    </header>
+    <main>
+        <section class="card">
+            <h2>Calculadora de Edad</h2>
+            <form id="birthForm">
+                <div class="form-group">
+                    <label>Fecha de nacimiento:</label>
+                    <div class="date-selectors">
+                        <select id="daySelect" required><option value="">Día</option></select>
+                        <select id="monthSelect" required>
+                            <option value="">Mes</option>
+                            <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+                            <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+                            <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+                            <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                        </select>
+                        <select id="yearSelect" required><option value="">Año</option></select>
+                    </div>
+                </div>
+                <button type="submit" class="btn-action">Calcular tiempo</button>
+            </form>
+            <div id="edadError" class="message error" style="display:none;"></div>
+            <div id="edadResult" class="result-box" style="display:none;">
+                <h3>Tiempo transcurrido:</h3>
+                <p id="edadResultText"></p>
+            </div>
+        </section>
+    </main>
+    <script>
+        const daySelect = document.getElementById('daySelect');
+        const monthSelect = document.getElementById('monthSelect');
+        const yearSelect = document.getElementById('yearSelect');
+        const currentYear = new Date().getFullYear();
+
+        for (let y = currentYear; y >= 1900; y--) {
+            let opt = document.createElement('option');
+            opt.value = y; opt.textContent = y;
+            yearSelect.appendChild(opt);
+        }
+
+        function updateDays() {
+            const selectedDay = parseInt(daySelect.value) || 1;
+            const year = parseInt(yearSelect.value) || currentYear;
+            const month = parseInt(monthSelect.value);
+            let maxDays = month ? new Date(year, month, 0).getDate() : 31;
+
+            daySelect.innerHTML = '<option value="">Día</option>';
+            for (let d = 1; d <= maxDays; d++) {
+                let opt = document.createElement('option');
+                opt.value = d; opt.textContent = d;
+                if (d === selectedDay) opt.selected = true;
+                daySelect.appendChild(opt);
+            }
+        }
+        monthSelect.addEventListener('change', updateDays);
+        yearSelect.addEventListener('change', updateDays);
+        updateDays();
+
+        document.getElementById('birthForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const errBox = document.getElementById('edadError');
+            const resBox = document.getElementById('edadResult');
+            errBox.style.display = 'none'; resBox.style.display = 'none';
+
+            const day = parseInt(daySelect.value);
+            const month = parseInt(monthSelect.value);
+            const year = parseInt(yearSelect.value);
+            const birthDate = new Date(year, month - 1, day);
+            const today = new Date();
+
+            if (birthDate > today) {
+                errBox.textContent = "La fecha no puede ser futura.";
+                errBox.style.display = 'block';
+                return;
+            }
+
+            let years = today.getFullYear() - birthDate.getFullYear();
+            let months = today.getMonth() - birthDate.getMonth();
+            if (today.getDate() < birthDate.getDate()) months--;
+            if (months < 0) { years--; months += 12; }
+
+            document.getElementById('edadResultText').textContent = `${years} años y ${months} meses`;
+            resBox.style.display = 'block';
+        });
+    </script>
+</body>
+</html>
